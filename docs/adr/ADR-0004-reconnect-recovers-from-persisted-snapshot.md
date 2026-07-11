@@ -9,7 +9,7 @@ SignalR é um canal de notificação, não um log confiável para clientes desco
 
 ## Decision
 
-Ao iniciar ou reconectar, o cliente Blazor busca `GET /api/operations/{id}`. O push contém a projeção atual, mas não é a única fonte de verdade.
+Ao reconectar com uma operação selecionada, o cliente Blazor busca `GET /api/operations/{id}`. O push contém a projeção atual, mas não é a única fonte de verdade.
 
 ## Consequences
 
