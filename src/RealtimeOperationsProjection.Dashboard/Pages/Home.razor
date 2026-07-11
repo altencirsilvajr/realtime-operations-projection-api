@@ -10,8 +10,8 @@
     <section class="guide"><strong>Roteiro:</strong> conecte o hub, crie uma operação, avance Processing e Completed, compare snapshot/push e force uma falha.</section>
     <section class="actions">
         <button id="connect-realtime" @onclick="ConnectAsync">Connect realtime</button><button id="create-operation" @onclick="CreateAsync">Create operation</button>
-        <button id="to-processing" disabled="@(Snapshot?.Status != "Created")" @onclick="() => TransitionAsync("Processing")">→ Processing</button>
-        <button id="to-completed" disabled="@(Snapshot?.Status != "Processing")" @onclick="() => TransitionAsync("Completed")">→ Completed</button>
+        <button id="to-processing" disabled="@(!CanMoveToProcessing)" @onclick="MoveToProcessingAsync">→ Processing</button>
+        <button id="to-completed" disabled="@(!CanMoveToCompleted)" @onclick="MoveToCompletedAsync">→ Completed</button>
         <button id="invalid-transition" disabled="@(Snapshot is null)" @onclick="ForceInvalidAsync">Expected failure</button>
     </section>
     <section class="status-grid"><article class="card"><span>Hub</span><strong id="hub-state">@Realtime.State</strong></article><article class="card"><span>State source</span><strong id="state-source">@Source</strong></article><article class="card"><span>Projection persisted?</span><strong>@(Snapshot is null ? "awaiting command" : "yes — API read model")</strong></article></section>
@@ -26,9 +26,13 @@
 
 @code {
     private OperationSnapshot? Snapshot; private string Source = "not connected"; private string? Error; private readonly List<string> Trace = [];
+    private bool CanMoveToProcessing => Snapshot?.Status == "Created";
+    private bool CanMoveToCompleted => Snapshot?.Status == "Processing";
     protected override void OnInitialized() { Realtime.ProjectionReceived += ReceivePushAsync; Realtime.Reconnected += ReloadAfterReconnectAsync; }
     private async Task ConnectAsync() { await Realtime.ConnectAsync(); Source = "connected — snapshot remains authoritative"; Trace.Insert(0, "SignalR connected. Reconnection triggers HTTP snapshot reload."); }
     private async Task CreateAsync() { Error = null; Snapshot = await Api.CreateAsync("warehouse-pick"); Source = "HTTP snapshot (creation response)"; Record("POST /api/operations", Snapshot); }
+    private Task MoveToProcessingAsync() => TransitionAsync("Processing");
+    private Task MoveToCompletedAsync() => TransitionAsync("Completed");
     private async Task TransitionAsync(string status) { Error = null; Snapshot = await Api.TransitionAsync(Snapshot!.Id, status); Source = "HTTP snapshot (command response)"; Record($"POST transition → {status}", Snapshot); }
     private async Task ForceInvalidAsync() { try { await Api.TransitionAsync(Snapshot!.Id, "Created"); } catch (OperationsApiException exception) { Error = exception.Message; Trace.Insert(0, "409 ProblemDetails received; state was not changed."); } }
     private async Task ReceivePushAsync(OperationSnapshot snapshot) { Snapshot = snapshot; Source = "SignalR push (after persisted projection)"; Record("SignalR: operationProjectionUpdated", snapshot); await InvokeAsync(StateHasChanged); }
