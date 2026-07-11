@@ -1,0 +1,38 @@
+@page "/"
+@using RealtimeOperationsProjection.Dashboard
+@implements IAsyncDisposable
+@inject OperationsApiClient Api
+@inject RealtimeOperationsClient Realtime
+
+<PageTitle>Realtime Operations Lab</PageTitle>
+<main class="lab-shell">
+    <header><p class="eyebrow">LOCAL LEARNING DASHBOARD · NOT A PRODUCT UI</p><h1>Realtime operations projection</h1><p>Observe: command → domain event → persisted projection → SignalR push.</p></header>
+    <section class="guide"><strong>Roteiro:</strong> conecte o hub, crie uma operação, avance Processing e Completed, compare snapshot/push e force uma falha.</section>
+    <section class="actions">
+        <button id="connect-realtime" @onclick="ConnectAsync">Connect realtime</button><button id="create-operation" @onclick="CreateAsync">Create operation</button>
+        <button id="to-processing" disabled="@(Snapshot?.Status != "Created")" @onclick="() => TransitionAsync("Processing")">→ Processing</button>
+        <button id="to-completed" disabled="@(Snapshot?.Status != "Processing")" @onclick="() => TransitionAsync("Completed")">→ Completed</button>
+        <button id="invalid-transition" disabled="@(Snapshot is null)" @onclick="ForceInvalidAsync">Expected failure</button>
+    </section>
+    <section class="status-grid"><article class="card"><span>Hub</span><strong id="hub-state">@Realtime.State</strong></article><article class="card"><span>State source</span><strong id="state-source">@Source</strong></article><article class="card"><span>Projection persisted?</span><strong>@(Snapshot is null ? "awaiting command" : "yes — API read model")</strong></article></section>
+    @if (Snapshot is not null)
+    {
+        <section class="projection"><h2>Current operational projection</h2><dl><dt>Operation</dt><dd id="operation-id">@Snapshot.Id</dd><dt>Name</dt><dd>@Snapshot.Name</dd><dt>Status</dt><dd id="operation-status" class="status">@Snapshot.Status</dd><dt>Updated</dt><dd>@Snapshot.LastChangedAt.LocalDateTime.ToString("HH:mm:ss.fff")</dd></dl></section>
+        <section class="timeline"><h2>Persisted timeline</h2><ol>@foreach (var item in Snapshot.Timeline) { <li><strong>@(item.PreviousStatus ?? "—") → @item.NewStatus</strong><span>@item.OccurredAt.LocalDateTime.ToString("HH:mm:ss.fff")</span></li> }</ol></section>
+    }
+    <section class="trace"><h2>Real payload trace</h2>@foreach (var item in Trace) { <pre>@item</pre> }</section>
+    @if (!string.IsNullOrWhiteSpace(Error)) { <section id="expected-failure" class="failure"><strong>Expected ProblemDetails failure</strong><pre>@Error</pre></section> }
+</main>
+
+@code {
+    private OperationSnapshot? Snapshot; private string Source = "not connected"; private string? Error; private readonly List<string> Trace = [];
+    protected override void OnInitialized() { Realtime.ProjectionReceived += ReceivePushAsync; Realtime.Reconnected += ReloadAfterReconnectAsync; }
+    private async Task ConnectAsync() { await Realtime.ConnectAsync(); Source = "connected — snapshot remains authoritative"; Trace.Insert(0, "SignalR connected. Reconnection triggers HTTP snapshot reload."); }
+    private async Task CreateAsync() { Error = null; Snapshot = await Api.CreateAsync("warehouse-pick"); Source = "HTTP snapshot (creation response)"; Record("POST /api/operations", Snapshot); }
+    private async Task TransitionAsync(string status) { Error = null; Snapshot = await Api.TransitionAsync(Snapshot!.Id, status); Source = "HTTP snapshot (command response)"; Record($"POST transition → {status}", Snapshot); }
+    private async Task ForceInvalidAsync() { try { await Api.TransitionAsync(Snapshot!.Id, "Created"); } catch (OperationsApiException exception) { Error = exception.Message; Trace.Insert(0, "409 ProblemDetails received; state was not changed."); } }
+    private async Task ReceivePushAsync(OperationSnapshot snapshot) { Snapshot = snapshot; Source = "SignalR push (after persisted projection)"; Record("SignalR: operationProjectionUpdated", snapshot); await InvokeAsync(StateHasChanged); }
+    private async Task ReloadAfterReconnectAsync() { if (Snapshot is not null) { Snapshot = await Api.GetAsync(Snapshot.Id); Source = "HTTP snapshot after SignalR reconnect"; Record("GET snapshot after reconnect", Snapshot); await InvokeAsync(StateHasChanged); } }
+    private void Record(string label, OperationSnapshot snapshot) => Trace.Insert(0, $"{label}\n{System.Text.Json.JsonSerializer.Serialize(snapshot, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })}");
+    public async ValueTask DisposeAsync() { Realtime.ProjectionReceived -= ReceivePushAsync; Realtime.Reconnected -= ReloadAfterReconnectAsync; await Realtime.DisposeAsync(); }
+}
