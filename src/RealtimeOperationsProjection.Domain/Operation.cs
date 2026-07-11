@@ -26,6 +26,8 @@ public sealed class Operation
         return new Operation(Guid.NewGuid(), name.Trim(), OperationStatus.Created);
     }
 
+    public static Operation Rehydrate(Guid id, string name, OperationStatus status) => new(id, name, status);
+
     public void TransitionTo(OperationStatus nextStatus)
     {
         if (!CanTransitionTo(nextStatus))
