@@ -1,0 +1,11 @@
+C:\Users\alten\projects\realtime-operations-projection-api\src\RealtimeOperationsProjection.Domain\bin\Debug\net9.0\RealtimeOperationsProjection.Domain.deps.json
+C:\Users\alten\projects\realtime-operations-projection-api\src\RealtimeOperationsProjection.Domain\bin\Debug\net9.0\RealtimeOperationsProjection.Domain.dll
+C:\Users\alten\projects\realtime-operations-projection-api\src\RealtimeOperationsProjection.Domain\bin\Debug\net9.0\RealtimeOperationsProjection.Domain.pdb
+C:\Users\alten\projects\realtime-operations-projection-api\src\RealtimeOperationsProjection.Domain\obj\Debug\net9.0\RealtimeOperationsProjection.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\alten\projects\realtime-operations-projection-api\src\RealtimeOperationsProjection.Domain\obj\Debug\net9.0\RealtimeOperationsProjection.Domain.AssemblyInfoInputs.cache
+C:\Users\alten\projects\realtime-operations-projection-api\src\RealtimeOperationsProjection.Domain\obj\Debug\net9.0\RealtimeOperationsProjection.Domain.AssemblyInfo.cs
+C:\Users\alten\projects\realtime-operations-projection-api\src\RealtimeOperationsProjection.Domain\obj\Debug\net9.0\RealtimeOperationsProjection.Domain.csproj.CoreCompileInputs.cache
+C:\Users\alten\projects\realtime-operations-projection-api\src\RealtimeOperationsProjection.Domain\obj\Debug\net9.0\RealtimeOperationsProjection.Domain.dll
+C:\Users\alten\projects\realtime-operations-projection-api\src\RealtimeOperationsProjection.Domain\obj\Debug\net9.0\refint\RealtimeOperationsProjection.Domain.dll
+C:\Users\alten\projects\realtime-operations-projection-api\src\RealtimeOperationsProjection.Domain\obj\Debug\net9.0\RealtimeOperationsProjection.Domain.pdb
+C:\Users\alten\projects\realtime-operations-projection-api\src\RealtimeOperationsProjection.Domain\obj\Debug\net9.0\ref\RealtimeOperationsProjection.Domain.dll
