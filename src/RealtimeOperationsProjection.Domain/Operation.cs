@@ -32,7 +32,7 @@ public sealed class Operation
     {
         if (!CanTransitionTo(nextStatus))
         {
-            throw new InvalidOperationException($"Cannot transition from {Status} to {nextStatus}.");
+            throw new InvalidOperationTransitionException(Status, nextStatus);
         }
 
         var previousStatus = Status;
