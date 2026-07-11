@@ -7,3 +7,4 @@ obj/
 *.db-wal
 *.log
 output/
+.playwright-cli/
