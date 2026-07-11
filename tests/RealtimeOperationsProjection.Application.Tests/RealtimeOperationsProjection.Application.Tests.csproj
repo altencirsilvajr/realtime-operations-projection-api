@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\RealtimeOperationsProjection.Application\RealtimeOperationsProjection.Application.csproj" />
+    <ProjectReference Include="..\..\src\RealtimeOperationsProjection.Domain\RealtimeOperationsProjection.Domain.csproj" />
   </ItemGroup>
 
 </Project>
