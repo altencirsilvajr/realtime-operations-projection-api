@@ -30,11 +30,13 @@ public sealed class SqliteOperationStore(OperationsDbContext dbContext) : IOpera
             return null;
         }
 
-        var events = await dbContext.Events.AsNoTracking()
+        var eventEntities = await dbContext.Events.AsNoTracking()
             .Where(item => item.OperationId == operationId)
-            .OrderBy(item => item.OccurredAt)
-            .Select(item => new OperationTimelineEvent(item.PreviousStatus, item.NewStatus, item.OccurredAt))
             .ToListAsync(cancellationToken);
+        // SQLite cannot translate DateTimeOffset ordering; the operation timeline is intentionally small in this lab.
+        var events = eventEntities.OrderBy(item => item.OccurredAt)
+            .Select(item => new OperationTimelineEvent(item.PreviousStatus, item.NewStatus, item.OccurredAt))
+            .ToList();
         return new OperationSnapshot(projection.OperationId, projection.Name, projection.Status, projection.CreatedAt, projection.LastChangedAt, events);
     }
 
