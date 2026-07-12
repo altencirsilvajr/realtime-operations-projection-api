@@ -13,7 +13,8 @@ builder.Services.AddExceptionHandler<OperationExceptionHandler>();
 builder.Services.AddDbContext<OperationsDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("OperationsDb") ?? "Data Source=operations.db"));
 builder.Services.AddHealthChecks().AddCheck<DatabaseHealthCheck>("sqlite");
-builder.Services.AddSignalR();
+builder.Services.AddSignalR()
+    .AddJsonProtocol(options => options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddCors(options => options.AddPolicy("learning-dashboard", policy => policy
     .WithOrigins("http://localhost:5408")
     .AllowAnyHeader()
