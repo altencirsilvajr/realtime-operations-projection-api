@@ -8,3 +8,7 @@ obj/
 *.log
 output/
 .playwright-cli/
+
+# Local start script runtime artifacts
+.local-pids/
+.local-logs/
